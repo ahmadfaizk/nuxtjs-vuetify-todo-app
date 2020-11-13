@@ -18,10 +18,10 @@
               </v-card-title>
               <v-card-text>
                 <v-container>
-                  <v-form ref="form" v-model="valid" lazy-validation>
+                  <v-form ref="form" v-model="valid">
                     <v-row>
                       <v-col cols="12">
-                        <v-text-field v-model="editedItem.name" :rules="[v => !!v || 'Nama harus diisi']" label="Nama Kategori" required />
+                        <v-text-field v-model="editedItem.name" :rules="nameRules" label="Nama Kategori" required />
                       </v-col>
                     </v-row>
                   </v-form>
@@ -81,10 +81,13 @@ export default {
   data () {
     return {
       id: null,
-      valid: true,
+      valid: false,
       headers: [
         { text: 'Nama Kategori', value: 'name' },
         { text: 'Actions', value: 'actions', sortable: false }
+      ],
+      nameRules: [
+        v => !!v || 'Nama harus diisi'
       ],
       items: [],
       dialog: false,
@@ -100,7 +103,7 @@ export default {
   },
   computed: {
     formTitle () {
-      return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
+      return this.editedIndex === -1 ? 'Kategori Baru' : 'Edit Kategori'
     }
   },
   watch: {

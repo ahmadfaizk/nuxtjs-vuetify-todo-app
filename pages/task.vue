@@ -18,60 +18,72 @@
               </v-card-title>
               <v-card-text>
                 <v-container>
-                  <v-row>
-                    <v-col cols="12">
-                      <v-text-field v-model="editedItem.name" label="Nama Kategori" />
-                    </v-col>
-                    <v-col cols="12">
-                      <v-dialog
-                        ref="dialog"
-                        v-model="modal"
-                        :return-value.sync="date"
-                        persistent
-                        width="290px"
-                      >
-                        <template v-slot:activator="{ on, attrs }">
-                          <v-text-field
-                            v-model="editedItem.date"
-                            label="Pilih tanggal"
-                            prepend-icon="mdi-calendar"
-                            readonly
-                            v-bind="attrs"
-                            v-on="on"
-                          />
-                        </template>
-                        <v-date-picker
-                          v-model="editedItem.date"
-                          scrollable
+                  <v-form ref="form" v-model="valid">
+                    <v-row>
+                      <v-col cols="12">
+                        <v-text-field v-model="editedItem.name" label="Nama Task" :rules="[v => !!v || 'Nama harus diisi']" required />
+                      </v-col>
+                      <v-col cols="12">
+                        <v-dialog
+                          ref="dialog"
+                          v-model="modal"
+                          :return-value.sync="date"
+                          persistent
+                          width="290px"
                         >
-                          <v-spacer />
-                          <v-btn
-                            text
-                            color="primary"
-                            @click="modal = false"
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-text-field
+                              v-model="editedItem.date"
+                              label="Pilih tanggal"
+                              prepend-icon="mdi-calendar"
+                              readonly
+                              v-bind="attrs"
+                              :rules="[v => !!v || 'Tanggal harus diisi']"
+                              required
+                              v-on="on"
+                            />
+                          </template>
+                          <v-date-picker
+                            v-model="editedItem.date"
+                            scrollable
                           >
-                            Cancel
-                          </v-btn>
-                          <v-btn
-                            text
-                            color="primary"
-                            @click="$refs.dialog.save(date)"
-                          >
-                            OK
-                          </v-btn>
-                        </v-date-picker>
-                      </v-dialog>
-                    </v-col>
-                    <v-col cols="12">
-                      <v-select v-model="editedItem.category" :items="categories" item-text="name" item-value="_id" label="Kategori" />
-                    </v-col>
-                    <v-col cols="12">
-                      <v-textarea v-model="editedItem.description" label="Deskripsi" rows="2" />
-                    </v-col>
-                    <v-col cols="12">
-                      <v-checkbox v-if="editedIndex > -1" v-model="editedItem.done" label="Selesai ?" />
-                    </v-col>
-                  </v-row>
+                            <v-spacer />
+                            <v-btn
+                              text
+                              color="primary"
+                              @click="modal = false"
+                            >
+                              Cancel
+                            </v-btn>
+                            <v-btn
+                              text
+                              color="primary"
+                              @click="$refs.dialog.save(date)"
+                            >
+                              OK
+                            </v-btn>
+                          </v-date-picker>
+                        </v-dialog>
+                      </v-col>
+                      <v-col cols="12">
+                        <v-select
+                          v-model="editedItem.category"
+                          :items="categories"
+                          item-text="name"
+                          item-value="_id"
+                          label="Kategori"
+                          :rules="[v => !!v || 'Kategori harus dipilih']"
+                          required
+                        />
+                      </v-col>
+                      <v-col cols="12">
+                        <v-textarea v-model="editedItem.description" label="Deskripsi" rows="2" :rules="[v => !!v || 'Deskripsi harus diisi']" required />
+                      </v-col>
+                      <v-col cols="12">
+                        <v-checkbox v-if="editedIndex > -1" v-model="editedItem.done" label="Selesai ?" />
+                      </v-col>
+                    </v-row>
+                  </v-form>
                 </v-container>
               </v-card-text>
               <v-card-actions>
@@ -79,7 +91,7 @@
                 <v-btn color="blue darken-1" text @click="close">
                   Cancel
                 </v-btn>
-                <v-btn color="blue darken-1" text @click="save">
+                <v-btn color="blue darken-1" :disabled="!valid" text @click="save">
                   Save
                 </v-btn>
               </v-card-actions>
@@ -134,6 +146,7 @@ export default {
   data () {
     return {
       id: null,
+      valid: false,
       modal: false,
       date: new Date().toISOString().substr(0, 10),
       headers: [
@@ -196,6 +209,7 @@ export default {
     },
     close () {
       this.dialog = false
+      this.$refs.form.reset()
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
         this.editedIndex = -1
@@ -209,12 +223,15 @@ export default {
       })
     },
     save () {
-      if (this.editedIndex > -1) {
-        this.updateTask()
-      } else {
-        this.createTask()
+      this.$refs.form.validate()
+      if (this.valid) {
+        if (this.editedIndex > -1) {
+          this.updateTask()
+        } else {
+          this.createTask()
+        }
+        this.close()
       }
-      this.close()
     },
     deleteItemConfirm () {
       this.deleteTask()
