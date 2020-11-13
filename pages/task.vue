@@ -1,5 +1,8 @@
 <template>
   <div>
+    <v-alert v-model="alert" type="success" dismissible>
+      {{ message }}
+    </v-alert>
     <v-data-table :headers="headers" :items="items" :items-per-page="10" class="elevation-1">
       <template v-slot:top>
         <v-toolbar flat>
@@ -147,6 +150,8 @@ export default {
     return {
       id: null,
       valid: false,
+      alert: false,
+      message: '',
       modal: false,
       date: new Date().toISOString().substr(0, 10),
       headers: [
@@ -257,12 +262,16 @@ export default {
       await axios.post('api/task', this.editedItem)
         .then((response) => {
           this.fetchData()
+          this.message = 'Sukses membuat task baru'
+          this.alert = true
         })
     },
     async updateTask () {
       await axios.put('api/task/' + this.id, this.editedItem)
         .then((response) => {
           this.fetchData()
+          this.message = 'Sukses mengedit task'
+          this.alert = true
         })
     },
     async deleteTask () {
@@ -270,6 +279,8 @@ export default {
         .then(() => {
           this.closeDelete()
           this.fetchData()
+          this.message = 'Sukses menghapus task'
+          this.alert = true
         })
     },
     dateFormatter (date) {
